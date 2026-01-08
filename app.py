@@ -15,24 +15,6 @@ def get_text_response(question: str) -> str:
     )
     resp = llm.invoke(question)
     return resp.content
-
-# ---------- Stable Diffusion (Text-to-Image) ----------
-@st.cache_resource
-def load_diffusion_pipeline():
-    model_id = "runwayml/stable-diffusion-v1-5"
-    pipe = StableDiffusionPipeline.from_pretrained(
-        model_id,
-        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
-    )
-    if torch.cuda.is_available():
-        pipe = pipe.to("cuda")
-    return pipe
-
-def generate_image(prompt: str):
-    pipe = load_diffusion_pipeline()
-    image = pipe(prompt).images[0]
-    return image
-
 # ---------- Streamlit UI ----------
 st.set_page_config(page_title="Cohere Q&A + Stable Diffusion")
 
@@ -46,11 +28,5 @@ if st.button("Submit") and user_input:
         answer = get_text_response(user_input)
         st.subheader("Answer")
         st.write(answer)
-
-    elif mode == "Text-to-Image (Stable Diffusion)":
-        with st.spinner("Generating image..."):
-            image = generate_image(user_input)
-            st.subheader("Generated Image")
-            st.image(image, caption=user_input)
 
 
